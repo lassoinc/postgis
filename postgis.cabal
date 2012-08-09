@@ -17,4 +17,4 @@ cabal-version:       >=1.8
 library
   exposed-modules:     Database.PostgreSQL.Postgis
   -- other-modules:       
-  build-depends:       base ==4.5.*, persistent ==1.0.*, blaze-builder ==0.3.*, blaze-textual ==0.2.*
+  build-depends:       base ==4.5.*, persistent ==1.0.*, blaze-builder ==0.3.*, blaze-textual ==0.2.*, bytestring == 0.9.*, text

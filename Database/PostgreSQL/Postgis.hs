@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveDataTypeable, OverloadedStrings #-}
 module Database.PostgreSQL.Postgis (
 	Geography(..),
 	fromLatLon
@@ -7,6 +7,10 @@ import Database.Persist.Store
 import Blaze.ByteString.Builder
 import Blaze.Text
 import qualified Blaze.ByteString.Builder.Char.Utf8 as Utf8
+import Data.Monoid
+import Data.Typeable
+import Data.ByteString
+import qualified Data.Text as T
 
 newtype Geography = Geography ByteString deriving (Show, Read, Eq, Typeable)
 
@@ -18,7 +22,7 @@ fromLatLon lat lon = Geography $ toByteString $ fromByteString "ST_GeographyFrom
                     `mappend` fromByteString ")')" 
 
 instance PersistField Geography where
-    toPersistValue (Geography l) = PersistSpecific "geography(POINT,4326)" l
-    fromPersistValue (PersistSpecific "geography(POINT,4326)" l) = Right (SRID l)
-    fromPersistValue _ = Left "PersistField is not a PersistSpecific of geography"
+    toPersistValue (Geography l) = PersistSpecific l 
+    fromPersistValue (PersistSpecific l) = Right (Geography l)
+    fromPersistValue x = Left $ "PersistField " `mappend` T.pack (show x) `mappend` " is not a PersistSpecific"
     sqlType _ = SqlOther "geography(POINT,4326)"
