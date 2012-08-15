@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveDataTypeable, OverloadedStrings #-}
 module Database.PostgreSQL.Postgis (
 	Geography(..),
-	fromLatLon
+	fromLonLat
 	) where
 import Database.Persist.Store
 import Blaze.ByteString.Builder
@@ -14,12 +14,14 @@ import qualified Data.Text as T
 
 newtype Geography = Geography ByteString deriving (Show, Read, Eq, Typeable)
 
-fromLatLon :: Double -> Double -> Geography
-fromLatLon lat lon = Geography $ toByteString $ fromByteString "ST_GeographyFromText('SRID=4326;POINT("
-                    `mappend` double lat
-                    `mappend` Utf8.fromChar ' '
-                    `mappend` double lon
-                    `mappend` fromByteString ")')" 
+fromLonLat :: Double -> Double -> Geography
+fromLonLat lon lat = if lat <= 90 && lat >= -90 && lon <= 180 && lon >= -180
+                        then Geography $ toByteString $ fromByteString "ST_GeographyFromText('SRID=4326;POINT("
+                            `mappend` double lon
+                            `mappend` Utf8.fromChar ' '
+                            `mappend` double lat
+                            `mappend` fromByteString ")')" 
+                        else error $ "Coordinates (" ++ show lon ++ ", " ++ show lat ++ ") are invalid"
 
 instance PersistField Geography where
     toPersistValue (Geography l) = PersistSpecific l 
